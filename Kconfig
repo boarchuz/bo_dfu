@@ -1,0 +1,181 @@
+menu "[BO] DFU"
+
+    config BO_DFU_GPIO_DN
+        int "D- GPIO"
+        default 25
+        range 0 33
+
+    config BO_DFU_GPIO_DP
+        int "D+ GPIO"
+        default 26
+        range 0 33
+
+    config BO_DFU_USE_EN
+        bool "Use Enable Pin"
+        default y
+        help
+            A GPIO should be used to attach and detach from the bus, connected to the D- GPIO through 1.5k (+-5%).
+            It is possible (but not recommended) to omit this, pulling D- up to 3V3 instead. Series termination
+            resistors should always be used, but are even more important in this case.
+
+    if BO_DFU_USE_EN
+        config BO_DFU_GPIO_EN
+            int "Enable GPIO"
+            default 27
+            range 0 33
+    endif
+
+    config BO_DFU_MANUFACTURER_NAME
+        string "Manufacturer Name"
+        default "espressif"
+
+    config BO_DFU_DEVICE_NAME
+        string "Device Name"
+        default "ESP32"
+
+    config BO_DFU_INTERFACE_NAME
+        string "DFU Interface Name"
+        default "BO DFU"
+
+    config BO_DFU_VENDOR_ID
+        hex "USB Vendor ID"
+        default 0x303a
+        range 0 0xFFFF
+        help
+            0x303a == Espressif VID
+
+    config BO_DFU_PRODUCT_ID
+        hex "USB Product ID"
+        default 0x8000
+        range 0 0xFFFF
+        help
+            0x8000 == Espressif test PID
+
+    config BO_DFU_BCD_CUSTOM
+        bool "Custom BCD"
+        default n
+        help
+            Enable this to set a custom binary-coded decimal device revision.
+            By default, this is set to the ESP32 silicon revision.
+
+    if BO_DFU_BCD_CUSTOM
+        config BO_DFU_BCD
+            hex "USB BCD"
+            default 0x0001
+            range 0 0xFFFF
+            help
+                Binary-coded decimal device revision number. eg. 0x0001 = 0.01, 0x0203 = 2.03
+    endif
+
+    config BO_DFU_MAX_POWER_MA
+        int "Max Power (mA)"
+        default 100
+        range 0 500
+        help
+            Maximum current that will be drawn from the bus. This is sent to the host as requested upon connection.
+
+    config BO_DFU_DEFAULT
+        bool "Use Default Implementation"
+        default y
+        help
+            By default, the reference implementation in bo_dfu.c is used.
+            If you would like greater control over the DFU process, disable this option to remove bo_dfu.c from the build.
+
+    if BO_DFU_DEFAULT
+
+        config BO_DFU_DEFAULT_USE_HEARTBEAT_LED
+            bool "Enable Heartbeat LED"
+            default n
+            help
+                Enable to blink an LED while DFU mode is active.
+
+        if BO_DFU_DEFAULT_USE_HEARTBEAT_LED
+            config BO_DFU_GPIO_HEARTBEAT_LED
+                int "Heartbeat LED GPIO"
+                default 32
+                range 0 33
+
+            config BO_DFU_HEARTBEAT_LED_OFF_LEVEL
+                int "Heartbeat LED Off Level"
+                default 1
+                range 0 1
+        endif
+
+        config BO_DFU_DEFAULT_USE_ENTRY_BUTTON
+            bool "Enable Entry Button"
+            default n
+            help
+                Enable to enter DFU mode only if a button is held upon startup.
+                Take care to avoid other strapping pins.
+
+        if BO_DFU_DEFAULT_USE_ENTRY_BUTTON
+            config BO_DFU_GPIO_ENTRY_BUTTON
+                int "Entry Button GPIO"
+                default 33
+                range 0 39
+
+            config BO_DFU_ENTRY_BUTTON_IDLE_LEVEL
+                int "Entry Button Idle Level"
+                default 1
+                range 0 1
+        endif
+
+        config BO_DFU_DEFAULT_USE_EXIT_BUTTON
+            bool "Enable Exit Button"
+            default n
+            help
+                Enable to have the option to hold a button to exit DFU mode.
+
+        if BO_DFU_DEFAULT_USE_EXIT_BUTTON
+            config BO_DFU_GPIO_EXIT_BUTTON
+                int "Exit Button GPIO"
+                default 32
+                range 0 39
+
+            config BO_DFU_EXIT_BUTTON_IDLE_LEVEL
+                int "Exit Button Idle Level"
+                default 1
+                range 0 1
+
+            config BO_DFU_EXIT_BUTTON_HOLD_DURATION_MS
+                int "Exit Button Hold Duration (ms)"
+                default 5000
+                range 100 15000
+        endif
+
+        config BO_DFU_DEFAULT_USE_INACTIVITY_TIMEOUT
+            bool "Enable Inactivity Timeout"
+            default y
+            help
+                Enable to exit DFU mode if no download is started for a period of time.
+
+        if BO_DFU_DEFAULT_USE_INACTIVITY_TIMEOUT
+            config BO_DFU_INACTIVITY_TIMEOUT_S
+                int "Inactivity Timeout (s)"
+                default 300
+                range 30 3600
+        endif
+
+        config BO_DFU_DEFAULT_USE_COMPLETE_DELAY
+            bool "Enable Complete Delay"
+            default y
+            help
+                Enable to remain attached to the bus for a short time after the DFU download completes successfully.
+                Host clients vary in how they confirm a successul update. Some may report misleading errors if the
+                device detaches from the bus immediately after completion. This delay ensures they have the
+                opportunity to recognise a successful update, instead.
+
+            config BO_DFU_COMPLETE_TIMEOUT_MS
+                int "Complete Timeout (ms)"
+                default 5000
+                range 50 15000
+                help
+                    Specify how long to remain active on the USB bus after the download completes successfully.
+                    This both ensures the device exits DFU mode soon after a successful update even if there is an
+                    error at an inopportune moment, and addresses the issue of some host DFU clients reporting
+                    misleading errors if the device detaches from the bus before they've had a chance to query
+                    the status again.
+
+    endif # BO_DFU_DEFAULT
+
+endmenu
