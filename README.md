@@ -5,7 +5,7 @@ BO DFU is a bitbanged implementation of USB Low Speed and DFU for the ESP32 boot
 Once a bootloader with this component is built and flashed to the ESP32, it is able to receive firmware updates over USB without any special hardware or software.
 
 With a WebUSB-capable device, it's even possible to flash ESP32 firmware directly in the browser:
-https://boarchuz.github.io/bo_dfu_web/dfu-util/
+https://boarchuz.github.io/bo_dfu_web/
 
 ## Installation
 
@@ -66,7 +66,7 @@ All configuration options are available via Kconfig (`idf.py menuconfig`).
 
 ## Host Clients
 
-As well as the [browser-based updater](https://boarchuz.github.io/bo_dfu_web/dfu-util/) mentioned above, there is also [dfu-util](https://dfu-util.sourceforge.net/):
+As well as the [browser-based updater](https://boarchuz.github.io/bo_dfu_web/) mentioned above, there is also [dfu-util](https://dfu-util.sourceforge.net/):
 ```
 # List attached DFU-capable devices:
 dfu-util -l
