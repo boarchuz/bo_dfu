@@ -2,9 +2,9 @@
 
 BO DFU is a bitbanged implementation of USB Low Speed and DFU for the ESP32 bootloader.
 
-Once a bootloader with this component is built and flashed to the ESP32, it is able to receive firmware updates over USB without any special hardware or software.
+Once a bootloader with this component is built and flashed to the ESP32, it is able to receive 'OTA' firmware updates over USB without any special hardware or software.
 
-With a WebUSB-capable device, it's even possible to flash ESP32 firmware directly in the browser:
+With a WebUSB-capable device, it's even possible to update ESP32 firmware directly in the browser:
 https://boarchuz.github.io/bo_dfu_web/
 
 ## Installation
@@ -91,7 +91,7 @@ dfu-util -D build/app.bin
 
  - **USB Compliance**
 
-    This is a minimal USB Low Speed (1.5MHz) implementation with the specific and limited goal of adding and USB DFU support to the bootloader. It is *mostly* compliant.
+    This is a minimal USB Low Speed (1.5MHz) implementation with the specific and limited goal of adding USB DFU support to the bootloader. It is *mostly* compliant.
 
  - **Partitions**
 
@@ -109,8 +109,6 @@ dfu-util -D build/app.bin
 
     No security features are supported, including flash encryption, Secure Boot, app rollback, etc.
 
-    I have written this from scratch. It works surprisingly well but, as always, expect bugs.
-
 - **Speed**
 
-    For reference, a typical 1MB firmware file downloads in approximately 90 seconds.
+    For reference, a typical 1MB firmware file downloads in approximately 90 seconds. This may vary significantly depending on the host client. Also note that, for reliability, `bo_dfu` uses very conservative default timeouts; more optimised timeouts could halve this duration.
