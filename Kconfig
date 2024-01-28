@@ -74,6 +74,31 @@ menu "[BO] DFU"
         help
             Maximum current that will be drawn from the bus. This is sent to the host as requested upon connection.
 
+    config BO_DFU_DNLOAD_SYNC_POLL_TIMEOUT_MS
+        int "Sync Timeout (ms)"
+        default 250
+        range 10 2000
+        help
+            After each full block (4kB) is received, the device will be unresponsive on the bus for a short time while performing flash
+            operations. The host is notified of this duration, and will wait for at least this long before attempting to continue with the
+            next block.
+            This duration must be set high enough that the longest possible block erase and write can be accommodated. This will depend partly
+            on your flash configuration.
+            On the other hand, the lower this value is, the less time will be spent idle, allowing much faster updates.
+            Note that if the device is unexpectedly unresponsive at any time, the host will likely abandon the download assuming an error has
+            occurred. Downloads will fail if this is set too low.
+            This value is therefore a compromise between reliability and speed.
+            For reference, in QIO configuration at 80MHz, a block erase and write can take as little as 45ms.
+
+    config BO_DFU_DNLOAD_MANIFEST_POLL_TIMEOUT_MS
+        int "Manifest Timeout (ms)"
+        default 1000
+        range 10 10000
+        help
+            When the firmware is fully received, the device will be unresponsive on the bus while verifying and activating the new firmware.
+            See 'Download Sync Timeout' for more context.
+            The maximum required time will depend on flash configuration, maximum possible image size, etc.
+            
     config BO_DFU_DEFAULT
         bool "Use Default Implementation"
         default y

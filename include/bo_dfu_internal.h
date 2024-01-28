@@ -9,13 +9,9 @@
 #include "esp_image_format.h"
 
 #include "bo_dfu_log.h"
-
 #include "bo_dfu_internal_types.h"
 
-// For 0x1000 blocks, takes about 45ms to erase and write.
-#define BO_DFU_DOWNLOAD_SYNC_POLL_TIMEOUT_MS 250
-// ~1MB image takes approx 107ms
-#define BO_DFU_DOWNLOAD_MANIFEST_POLL_TIMEOUT_MS 1000
+#include "sdkconfig.h"
 
 FORCE_INLINE_ATTR void IRAM_ATTR bo_dfu_update_state_impl(uint8_t current_state, bo_dfu_t *dfu, bo_dfu_fsm_t new_state, uint8_t status)
 {
@@ -30,11 +26,11 @@ FORCE_INLINE_ATTR void IRAM_ATTR bo_dfu_update_state_impl(uint8_t current_state,
             dfu->dfu.state_set = BO_DFU_SET_FSM(DNLOAD_IDLE);
             break;
         case BO_DFU_FSM_DNLOAD_SYNC_READY:
-            dfu->dfu.status_and_poll_timeout = BO_DFU_STATUS_AND_POLL_TIMEOUT32(0, BO_DFU_DOWNLOAD_SYNC_POLL_TIMEOUT_MS);
+            dfu->dfu.status_and_poll_timeout = BO_DFU_STATUS_AND_POLL_TIMEOUT32(0, CONFIG_BO_DFU_DNLOAD_SYNC_POLL_TIMEOUT_MS);
             dfu->dfu.state_set = BO_DFU_SET_FSM(DNLOAD_SYNC_READY);
             break;
         case BO_DFU_FSM_MANIFEST_SYNC_READY:
-            dfu->dfu.status_and_poll_timeout = BO_DFU_STATUS_AND_POLL_TIMEOUT32(0, BO_DFU_DOWNLOAD_MANIFEST_POLL_TIMEOUT_MS);
+            dfu->dfu.status_and_poll_timeout = BO_DFU_STATUS_AND_POLL_TIMEOUT32(0, CONFIG_BO_DFU_DNLOAD_MANIFEST_POLL_TIMEOUT_MS);
             dfu->dfu.state_set = BO_DFU_SET_FSM(MANIFEST_SYNC_READY);
             break;
         case BO_DFU_FSM_DNLOAD_SYNC_DONE:
