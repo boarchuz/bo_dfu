@@ -243,14 +243,14 @@ static IRAM_ATTR bool bo_dfu_usb_transaction_setup_check(bo_dfu_t *dfu, const bo
                 {
                     /**
                      * Per the DFU spec, the host may select any block size between bMaxPacketSize0 and the device's specified wTransferSize.
-                     * However, this application is simplified greatly by requiring wTransferSize, as it is set to the flash sector size, and
-                     * thus each block can be easily processed by erasing and writing a sector of flash.
-                     * The host will typically default to wTransferSize so this is unlikely to ever be an issue. In such a case, the user may
-                     * need to specify the block size to force the DFU program to use the suggested wTransferSize.
-                     *
-                     * For the same reasons, this application rejects blocks smaller than this size.
-                     * This would normally occur on the last block when the firmware size is not an exact multiple of wTransferSize.
-                     * It is therefore necessary to pad the firmware file to the next wTransferSize boundary.
+                     * However, this application is simplified greatly by requiring wTransferSize == 0x1000 (flash sector size) so that each
+                     * block may be processed by erasing and writing a sector of flash.
+                     * The host will typically default to the device's wTransferSize so this is unlikely to ever be an issue. Even then, all
+                     * it would require is for the user to specify the block size in their host client to force compatibility.
+                     * 
+                     * The exception is the final data block (in all cases where the firmware size is not a perfect multiple of 0x1000).
+                     * This, too, is processed by erasing and writing a full sector; the buffer is cleared (with 0xFF) to set unused bytes
+                     * beforehand.
                     */
                     if(
                         BO_DFU_IS_CONFIGURED(dfu) &&
@@ -319,6 +319,9 @@ static IRAM_ATTR bool bo_dfu_usb_transaction_setup_check(bo_dfu_t *dfu, const bo
             {
                 case BO_DFU_FSM(IDLE):
                 case BO_DFU_FSM(DNLOAD_IDLE):
+                case BO_DFU_FSM(DNLOAD_SYNC_READY):
+                case BO_DFU_FSM(DNLOAD_SYNC_DONE):
+                case BO_DFU_FSM(MANIFEST_SYNC_READY):
                 {
                     if(
                         BO_DFU_IS_CONFIGURED(dfu) &&

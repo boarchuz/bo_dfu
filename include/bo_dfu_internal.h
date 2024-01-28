@@ -154,7 +154,7 @@ static IRAM_ATTR usb_dfu_status_t bo_dfu_process_firmware(bo_dfu_t *dfu)
     esp_image_metadata_t metadata;
     if(ESP_OK != esp_image_verify(ESP_IMAGE_VERIFY_SILENT, &dfu->ota.partition, &metadata))
     {
-        esp_image_verify(ESP_IMAGE_VERIFY, &dfu->ota.partition, &metadata);
+        ESP_LOGE(BO_DFU_TAG, "[%s] image invalid", __func__);
         return BO_DFU_STATUS_errVERIFY;
     }
 

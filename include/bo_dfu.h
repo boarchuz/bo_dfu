@@ -33,7 +33,6 @@ static IRAM_ATTR void bo_dfu_fsm(bo_dfu_t *dfu)
         {
             ESP_LOGD(BO_DFU_TAG, "[%s] bus reset", __func__);
             memset(BO_DFU_T_TO_BUS_RESET_PTR(dfu), 0, BO_DFU_T_BUS_RESET_SIZE);
-            bo_dfu_update_state(dfu, IDLE, BO_DFU_STATUS_OK);
             dfu->state = BO_DFU_BUS_DESYNCED;
         }
         /* falls through */
@@ -75,7 +74,7 @@ static esp_err_t IRAM_ATTR bo_dfu_init(bo_dfu_t *dfu)
 {
     memset(dfu, 0, sizeof(*dfu));
     dfu->state = BO_DFU_BUS_RESET;
-    _Static_assert(BO_DFU_FSM_IDLE == 0, "");
+    bo_dfu_update_state(dfu, IDLE, BO_DFU_STATUS_OK);
 
     if(ESP_OK != bo_dfu_ota_init(&dfu->ota))
     {
