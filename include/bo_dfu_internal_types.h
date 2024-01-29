@@ -8,10 +8,12 @@
 #include "bo_dfu_ota.h"
 
 typedef enum {
-    BO_DFU_BUS_RESET = -3,
-    BO_DFU_BUS_DESYNCED = -2,
-    BO_DFU_BUS_SYNCED = -1,
+    BO_DFU_BUS_INIT = -4,       // Initial state. Waiting for bus reset.
+    BO_DFU_BUS_RESET = -3,      // Received bus reset.
+    BO_DFU_BUS_DESYNCED = -2,   // Waiting for idle.
+    BO_DFU_BUS_SYNCED = -1,     // Something unexpected but not a bus error (eg. invalid packet). Continue with next packet.
     BO_DFU_BUS_OK = 0,
+    // >0 used for received packet len.
 } bo_dfu_bus_state_t;
 
 typedef enum {
@@ -125,6 +127,7 @@ typedef struct {
     bo_dfu_usb_transfer_t transfer;
 } bo_dfu_t;
 #define BO_DFU_T_GET_STATE(x) ((x)->dfu.state_get)
+#define BO_DFU_T_IS_INIT(x) ((x)->state == BO_DFU_BUS_INIT)
 #define BO_DFU_T_IS_COMPLETE(x) BO_DFU_FSM_IS_COMPLETE(BO_DFU_T_GET_STATE(x))
 
 #endif /* BO_DFU_INTERNAL_TYPES_H */

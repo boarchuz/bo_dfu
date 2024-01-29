@@ -106,6 +106,11 @@ static IRAM_ATTR void bo_dfu_default(void)
         uint32_t inactivity_timeout_previous = bo_dfu_ccount();
     #endif
 
+    #ifdef CONFIG_BO_DFU_DEFAULT_USE_CONNECT_TIMEOUT
+        // Initialise connection timeout
+        uint32_t attach_time = bo_dfu_ccount();
+    #endif
+
     // Initialise completion timeout
     bool complete = false;
     uint32_t complete_time;
@@ -124,7 +129,7 @@ static IRAM_ATTR void bo_dfu_default(void)
 
         #ifdef CONFIG_BO_DFU_DEFAULT_USE_HEARTBEAT_LED
             // Toggle LED every 250ms
-            if(bo_dfu_ccount() - led_previous_time > BO_DFU_MS_TO_CCOUNT(250))
+            if(bo_dfu_ccount() - led_previous_time >= BO_DFU_MS_TO_CCOUNT(250))
             {
                 #if CONFIG_BO_DFU_GPIO_HEARTBEAT_LED < 32
                     REG_WRITE(
@@ -141,6 +146,15 @@ static IRAM_ATTR void bo_dfu_default(void)
             }
         #endif
 
+        #ifdef CONFIG_BO_DFU_DEFAULT_USE_CONNECT_TIMEOUT
+            // Check initial connection
+            if(BO_DFU_T_IS_INIT(&dfu) && bo_dfu_ccount() - attach_time >= BO_DFU_MS_TO_CCOUNT(CONFIG_BO_DFU_DEFAULT_CONNECT_TIMEOUT_MS))
+            {
+                ESP_LOGI(BO_DFU_TAG, "Connection timed out, exiting");
+                break;
+            }
+        #endif
+
         // Check complete
         if(!complete)
         {
@@ -153,7 +167,7 @@ static IRAM_ATTR void bo_dfu_default(void)
         }
         else
         {
-            if(bo_dfu_ccount() - complete_time > BO_DFU_MS_TO_CCOUNT(CONFIG_BO_DFU_COMPLETE_TIMEOUT_MS))
+            if(bo_dfu_ccount() - complete_time >= BO_DFU_MS_TO_CCOUNT(CONFIG_BO_DFU_COMPLETE_TIMEOUT_MS))
             {
                 break;
             }

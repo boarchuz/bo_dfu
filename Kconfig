@@ -98,7 +98,7 @@ menu "[BO] DFU"
             When the firmware is fully received, the device will be unresponsive on the bus while verifying and activating the new firmware.
             See 'Download Sync Timeout' for more context.
             The maximum required time will depend on flash configuration, maximum possible image size, etc.
-            
+
     config BO_DFU_DEFAULT
         bool "Use Default Implementation"
         default y
@@ -126,9 +126,25 @@ menu "[BO] DFU"
                 range 0 1
         endif
 
+        config BO_DFU_DEFAULT_USE_CONNECT_TIMEOUT
+            bool "Enable Connection Timeout"
+            default n
+            help
+                Enable to exit DFU mode if there is no activity from the host soon after starting.
+                This would best be used with a device that is only connected over USB for the purpose of DFU, where
+                a reset would normally start the application while a reset with USB attached would start DFU.
+                A USB bus reset signal is used to determine the host presence.
+
+        if BO_DFU_DEFAULT_USE_CONNECT_TIMEOUT
+            config BO_DFU_DEFAULT_CONNECT_TIMEOUT_MS
+                int "Connection Timeout (ms)"
+                default 1000
+                range 100 15000
+        endif
+
         config BO_DFU_DEFAULT_USE_ENTRY_BUTTON
             bool "Enable Entry Button"
-            default n
+            default y
             help
                 Enable to enter DFU mode only if a button is held upon startup.
                 Take care to avoid other strapping pins.
@@ -147,14 +163,14 @@ menu "[BO] DFU"
 
         config BO_DFU_DEFAULT_USE_EXIT_BUTTON
             bool "Enable Exit Button"
-            default n
+            default y
             help
                 Enable to have the option to hold a button to exit DFU mode.
 
         if BO_DFU_DEFAULT_USE_EXIT_BUTTON
             config BO_DFU_GPIO_EXIT_BUTTON
                 int "Exit Button GPIO"
-                default 32
+                default 33
                 range 0 39
 
             config BO_DFU_EXIT_BUTTON_IDLE_LEVEL

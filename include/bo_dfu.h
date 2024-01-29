@@ -29,6 +29,18 @@ static IRAM_ATTR void bo_dfu_fsm(bo_dfu_t *dfu)
 {
     switch(dfu->state)
     {
+        case BO_DFU_BUS_INIT:
+        {
+            uint32_t reset_check_time = bo_dfu_ccount();
+            if(!bo_dfu_usb_bus_rx_check_reset(&reset_check_time))
+            {
+                break;
+            }
+            ESP_LOGD(BO_DFU_TAG, "[%s] initial bus reset", __func__);
+            bo_dfu_update_state(dfu, IDLE, BO_DFU_STATUS_OK);
+            dfu->state = BO_DFU_BUS_RESET;
+        }
+        /* falls through */
         case BO_DFU_BUS_RESET:
         {
             ESP_LOGD(BO_DFU_TAG, "[%s] bus reset", __func__);
@@ -73,8 +85,7 @@ static bool IRAM_ATTR bo_dfu_is_compatible_reset_type(void)
 static esp_err_t IRAM_ATTR bo_dfu_init(bo_dfu_t *dfu)
 {
     memset(dfu, 0, sizeof(*dfu));
-    dfu->state = BO_DFU_BUS_RESET;
-    bo_dfu_update_state(dfu, IDLE, BO_DFU_STATUS_OK);
+    dfu->state = BO_DFU_BUS_INIT;
 
     if(ESP_OK != bo_dfu_ota_init(&dfu->ota))
     {

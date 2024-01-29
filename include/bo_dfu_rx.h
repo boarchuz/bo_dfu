@@ -207,12 +207,17 @@ static IRAM_ATTR bool bo_dfu_usb_rx_wait_transition(uint32_t bus, uint32_t *bit_
     }
 }
 
+static IRAM_ATTR bool bo_dfu_usb_bus_rx_check_reset(uint32_t *bit_time)
+{
+    return !bo_dfu_usb_rx_wait_transition(BO_DFU_USB_RX_BUS_SE0, bit_time, BO_DFU_USB_RESET_SIGNAL_CYCLES);
+}
+
 static IRAM_ATTR bo_dfu_bus_state_t bo_dfu_usb_bus_rx_check_eop(uint32_t *bit_time)
 {
     // Check EOP (note: not necessarily SE0 here so must fail successfully if not)
     uint32_t se0_start_time = *bit_time;
 
-    if(!bo_dfu_usb_rx_wait_transition(BO_DFU_USB_RX_BUS_SE0, bit_time, BO_DFU_USB_RESET_SIGNAL_CYCLES))
+    if(bo_dfu_usb_bus_rx_check_reset(bit_time))
     {
         return BO_DFU_BUS_RESET;
     }
